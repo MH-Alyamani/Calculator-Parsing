@@ -1,0 +1,97 @@
+/*
+
+    Student in Group:
+    Abdulaziz Mohammed Almalki  ID: 2135085
+    Abdulelah Ali Alturki       ID: 2136110
+    Mohammed Alyamani           ID: 2135971
+ 
+*/
+PARSER_BEGIN(Calculator)
+
+package Calculator;
+
+import java.io.*;
+
+public class Calculator {
+    public static void main(String[] args) throws ParseException {
+        Calculator parser = new Calculator(System.in);
+        System.out.print("Enter your expression, then press Enter:");
+        try {
+            double result = parser.Start();
+            System.out.println("Result: " + result);
+        } catch (TokenMgrError e) {
+            System.out.println("Invalid input. Please try again.");
+        } catch (ParseException e) {
+            System.out.println("Error in expression: " + e.getMessage());
+        }
+    }
+}
+
+PARSER_END(Calculator)
+
+SKIP : {
+    " "
+  | "\t"
+}
+
+TOKEN : {
+    < EOL: "\n" | "\r" | "\r\n" >
+  | < PLUS: "+" >
+  | < MINUS: "-" >
+  | < TIMES: "*" >
+  | < DIVIDE: "/" >
+  | < OPEN_PAR: "(" >
+  | < CLOSE_PAR: ")" >
+}
+
+TOKEN : {
+    < #DIGIT : (["0"-"9"])+ > 
+}
+
+TOKEN : {
+     < NUMBER : < DIGIT > | < DIGIT > "." < DIGIT > | < DIGIT > "." | "." < DIGIT > > 
+}
+
+double Start() : {
+    double result;
+} {
+    result = Expression()
+    (
+        <EOL> 
+    )
+    { return result; }
+}
+
+double Expression() : {
+    double result;
+} {
+    result = Term()
+    (
+        < PLUS > { result += Term(); }
+      | < MINUS > { result -= Term(); }
+    )*
+    { return result; }
+}
+
+double Term() : {
+    double result;
+} {
+    result = Primary()
+    (
+        < TIMES > { result *= Primary(); }
+      | < DIVIDE > { result /= Primary(); }
+    )*
+    { return result; }
+}
+
+double Primary() : {
+    double result;
+} {
+    (
+        < NUMBER > { result = Double.parseDouble(token.image); }
+      | < OPEN_PAR >
+        result = Expression()
+        < CLOSE_PAR >
+    )
+    { return result; }
+}
